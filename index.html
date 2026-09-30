@@ -1,0 +1,2099 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cadence for Windows</title>
+<meta name="theme-color" content="#06070f">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="canonical" href="https://ttvpixalon.github.io/cadence/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Cadence">
+<meta property="og:title" content="Cadence · The notch Windows never had">
+<meta property="og:description" content="What's playing, in a notch at the top of your screen. Liquid-glass media flyouts, a volume mixer, synced lyrics and listening stats. Free for Windows 10 and 11.">
+<meta property="og:url" content="https://ttvpixalon.github.io/cadence/">
+<meta property="og:image" content="https://ttvpixalon.github.io/cadence/assets/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Cadence · The notch Windows never had">
+<meta name="twitter:description" content="What's playing, in a notch at the top of your screen. Free for Windows 10 and 11.">
+<meta name="twitter:image" content="https://ttvpixalon.github.io/cadence/assets/og.jpg">
+<meta name="description" content="Cadence puts what's playing in a notch at the top of your Windows screen, with liquid-glass media flyouts, a volume mixer, synced lyrics and listening stats. Free.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Instrument+Sans:wdth,wght@75..100,400..700&family=Martian+Mono:wdth,wght@75..112.5,400..600&display=swap">
+<style>
+/* Layout: a desktop at night. The page's own top edge is Cadence's bar with a live notch;
+   the hero is the desktop beneath it, and each section steps further into the night. */
+@property --song {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #ffbe55;
+}
+:root {
+  color-scheme: dark;
+  --ink: #06070f;
+  --night: #0c0e22;
+  --haze: #1d1b45;
+  --text: #f6f3fb;
+  --muted: #aca8c8;
+  --faint: #77739a;
+  --ember: #ff8a4c;
+  --rose: #e8487f;
+  --sun: #ffc35c;
+  --on-sun: #1d0b12;
+  --line: rgba(236, 232, 255, 0.09);
+  --line-2: rgba(236, 232, 255, 0.16);
+  --notch: #030304;
+  --song: #ffbe55;
+  --font-display: "Bricolage Grotesque", "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Instrument Sans", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "Martian Mono", "Cascadia Mono", ui-monospace, Consolas, monospace;
+  --spring: cubic-bezier(0.3, 1.22, 0.5, 1);
+  --spring-soft: cubic-bezier(0.34, 1.12, 0.56, 1);
+  --out: cubic-bezier(0.16, 1, 0.3, 1);
+  --bar-h: 34px;
+  --gutter: clamp(16px, 4.5vw, 56px);
+  --maxw: 1200px;
+  transition: --song 1.6s ease;
+}
+html {
+  background: var(--ink);
+  scroll-behavior: smooth;
+  scroll-padding-top: 48px;
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+body {
+  margin: 0;
+  background: var(--ink);
+  color: var(--text);
+  font: 400 17px/1.6 var(--font-body);
+  font-stretch: 96%;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+img {
+  max-width: 100%;
+  display: block;
+}
+a {
+  color: inherit;
+}
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+}
+:focus-visible {
+  outline: 2px solid var(--sun);
+  outline-offset: 3px;
+  border-radius: 8px;
+}
+.vh {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+main {
+  overflow-x: clip;
+}
+
+/* ============ the bar (the page's top edge is the product) ============ */
+.topbar {
+  position: fixed;
+  z-index: 40;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: calc(var(--bar-h) + env(safe-area-inset-top, 0px));
+  padding-top: env(safe-area-inset-top, 0px);
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-inline: 12px;
+  font: 600 13px/1 var(--font-body);
+  font-stretch: 100%;
+  letter-spacing: 0.005em;
+  color: rgba(255, 255, 255, 0.92);
+  background: rgba(12, 12, 20, 0.5);
+  -webkit-backdrop-filter: blur(22px) saturate(1.6);
+  backdrop-filter: blur(22px) saturate(1.6);
+  box-shadow:
+    inset 0 -1px 0 rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  overflow: hidden;
+}
+.tb-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  mix-blend-mode: screen;
+  background:
+    radial-gradient(300px 46px at 50% 0%, var(--song), transparent 72%),
+    radial-gradient(900px 150px at 50% 0%, color-mix(in srgb, var(--song) 60%, transparent), transparent 72%);
+  will-change: opacity, transform;
+}
+.tb-sweep {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.tb-sweep::before,
+.tb-sweep::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 340px;
+  opacity: 0;
+  transform: translateX(-50%);
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5) 50%, transparent);
+}
+.topbar.sweep .tb-sweep::before {
+  animation: sweep-l 1700ms cubic-bezier(0.3, 0.55, 0.3, 1) forwards;
+}
+.topbar.sweep .tb-sweep::after {
+  animation: sweep-r 1700ms cubic-bezier(0.3, 0.55, 0.3, 1) forwards;
+}
+@keyframes sweep-l {
+  0% { transform: translateX(-50%); opacity: 0; }
+  18% { opacity: 1; }
+  100% { transform: translateX(calc(-50% - 62vw)); opacity: 0; }
+}
+@keyframes sweep-r {
+  0% { transform: translateX(-50%); opacity: 0; }
+  18% { opacity: 1; }
+  100% { transform: translateX(calc(-50% + 62vw)); opacity: 0; }
+}
+.tb-side {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  white-space: nowrap;
+}
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  font-weight: 700;
+}
+.brand img {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+}
+.tb-date {
+  color: rgba(255, 255, 255, 0.78);
+  font-weight: 600;
+}
+.tb-date::before {
+  content: "";
+  display: inline-block;
+  width: 1px;
+  height: 12px;
+  margin-right: 12px;
+  vertical-align: -1px;
+  background: rgba(255, 255, 255, 0.2);
+}
+.tb-time {
+  font-variant-numeric: tabular-nums;
+}
+.tb-dl {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 11px;
+  border-radius: 11px;
+  font: 700 12px/1 var(--font-body);
+  text-decoration: none;
+  color: var(--on-sun);
+  background: linear-gradient(100deg, var(--sun), var(--ember));
+  opacity: 0;
+  transform: translateY(-4px) scale(0.92);
+  pointer-events: none;
+  transition: opacity 260ms ease, transform 420ms var(--spring);
+}
+.topbar.scrolled .tb-dl {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+@media (max-width: 920px) {
+  .tb-date {
+    display: none;
+  }
+}
+@media (max-width: 520px) {
+  .brand span {
+    display: none;
+  }
+}
+
+/* ============ the notch (a live copy of Cadence's) ============ */
+.notch {
+  --idle-w: 150px;
+  --idle-h: var(--bar-h);
+  --play-w: min(236px, 46vw);
+  --play-h: var(--bar-h);
+  --ann-w: 320px;
+  --open-w: min(464px, calc(100vw - 24px));
+  --open-h: 172px;
+  --ear: 14px;
+  position: fixed;
+  z-index: 45;
+  top: env(safe-area-inset-top, 0px);
+  left: 50%;
+  width: var(--idle-w);
+  height: var(--idle-h);
+  border-radius: 0 0 17px 17px;
+  background: var(--notch);
+  transform: translate(-50%, -110%);
+  transform-origin: top center;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.045) inset,
+    0 3px 12px -4px rgba(0, 0, 0, 0.55);
+  transition:
+    width 560ms var(--spring),
+    height 560ms var(--spring),
+    border-radius 360ms var(--out),
+    transform 600ms var(--spring-soft),
+    box-shadow 300ms ease;
+  will-change: width, height, transform;
+}
+.notch.in {
+  transform: translate(-50%, 0);
+}
+.notch::before,
+.notch::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: var(--ear);
+  height: var(--ear);
+  pointer-events: none;
+}
+.notch::before {
+  right: 100%;
+  background: radial-gradient(circle at 0 100%, transparent calc(var(--ear) - 0.5px), var(--notch) calc(var(--ear) + 0.5px));
+}
+.notch::after {
+  left: 100%;
+  background: radial-gradient(circle at 100% 100%, transparent calc(var(--ear) - 0.5px), var(--notch) calc(var(--ear) + 0.5px));
+}
+.notch.playing {
+  width: var(--play-w);
+  height: var(--play-h);
+  border-radius: 0 0 19px 19px;
+}
+.notch.announce:not(.open) {
+  width: var(--ann-w);
+  height: var(--play-h);
+  border-radius: 0 0 19px 19px;
+}
+.notch.hot.in:not(.open) {
+  transform: translate(-50%, 0) scale(1.05);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.06) inset,
+    0 10px 28px -6px rgba(0, 0, 0, 0.7);
+}
+.notch.open {
+  width: var(--open-w);
+  height: var(--open-h);
+  border-radius: 0 0 32px 32px;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.05) inset,
+    0 0 0 0.5px rgba(255, 255, 255, 0.05),
+    0 26px 50px -14px rgba(0, 0, 0, 0.85);
+}
+.notch:not(.open) {
+  transition-duration: 320ms, 320ms, 260ms, 600ms, 260ms;
+  transition-timing-function: var(--out), var(--out), var(--out), var(--spring-soft), ease;
+}
+.clip {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  overflow: hidden;
+}
+.n-handle {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: inherit;
+}
+.notch.open .n-handle {
+  display: none;
+}
+.bars {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 12px;
+}
+.bars i {
+  display: block;
+  width: 3px;
+  height: 100%;
+  border-radius: 2px;
+  background: #fff;
+  opacity: 0.92;
+  transform-origin: bottom;
+  transform: scaleY(0.3);
+}
+.notch:not(.playing) .bars i {
+  opacity: 0.4;
+}
+.compact {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--play-w);
+  height: var(--play-h);
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px 0 7px;
+  opacity: 0;
+  transition: opacity 160ms ease;
+}
+.notch.playing:not(.open):not(.announce) .compact {
+  opacity: 1;
+  transition-delay: 60ms;
+}
+.c-art,
+.a-art {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  object-fit: cover;
+  background: #222;
+  box-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.12);
+}
+.c-bars,
+.a-bars {
+  height: 13px;
+}
+.ann {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--ann-w);
+  height: var(--play-h);
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0 11px 0 7px;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 160ms ease, transform 160ms ease;
+  color: #fff;
+  font: 400 12.5px/16px var(--font-body);
+  font-stretch: 100%;
+}
+.notch.announce:not(.open) .ann {
+  opacity: 1;
+  transform: none;
+  transition: opacity 220ms ease 140ms, transform 420ms var(--spring) 120ms;
+}
+.a-text {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.a-text b {
+  font-weight: 650;
+}
+.a-text span {
+  color: rgba(255, 255, 255, 0.58);
+}
+.measure {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  white-space: nowrap;
+  font: 400 12.5px/16px var(--font-body);
+  font-stretch: 100%;
+  visibility: hidden;
+}
+.measure b {
+  font-weight: 650;
+}
+.nook {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--open-w);
+  height: var(--open-h);
+  display: flex;
+  gap: 16px;
+  padding: 17px 20px 15px 17px;
+  box-sizing: border-box;
+  color: #fff;
+  font-stretch: 100%;
+  opacity: 0;
+  transform: scale(0.965);
+  transform-origin: top center;
+  transition: opacity 130ms ease, transform 130ms ease;
+  pointer-events: none;
+}
+.notch.open .nook {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+  transition: opacity 240ms ease 140ms, transform 480ms var(--spring) 110ms;
+}
+.n-art {
+  position: relative;
+  flex: none;
+  width: 108px;
+  height: 108px;
+  margin-top: 4px;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #1c1c1e;
+  box-shadow:
+    0 0 0 0.5px rgba(255, 255, 255, 0.14),
+    0 12px 28px -10px color-mix(in srgb, var(--song) 70%, transparent);
+}
+.n-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.n-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding-top: 3px;
+}
+.n-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.n-text {
+  min-width: 0;
+}
+.n-title {
+  font: 650 15px/20px var(--font-body);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.n-artist {
+  font-size: 12.5px;
+  line-height: 17px;
+  color: rgba(255, 255, 255, 0.6);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.n-bars {
+  flex: none;
+  height: 18px;
+  margin-top: 3px;
+}
+.n-bars i {
+  width: 3.5px;
+}
+.n-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  margin: 8px 0 6px;
+}
+.n-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: rgba(255, 255, 255, 0.92);
+  transition: background 140ms ease, transform 200ms var(--spring);
+}
+.n-btn svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+}
+.n-play svg {
+  width: 24px;
+  height: 24px;
+}
+.n-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+.n-btn:active {
+  transform: scale(0.9);
+  background: rgba(255, 255, 255, 0.2);
+}
+.n-play .i-play {
+  display: none;
+}
+.notch:not(.playing) .n-play .i-play {
+  display: block;
+}
+.notch:not(.playing) .n-play .i-pause {
+  display: none;
+}
+.n-progress {
+  margin-top: auto;
+}
+.n-bar {
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.18);
+  overflow: hidden;
+}
+.n-fill {
+  height: 100%;
+  width: 0;
+  border-radius: 2px;
+  background: #fff;
+}
+.n-times {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 5px;
+  font: 400 10.5px/13px var(--font-body);
+  font-variant-numeric: tabular-nums;
+  color: rgba(255, 255, 255, 0.5);
+}
+.n-times #nApp {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 9.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+@media (max-width: 440px) {
+  .notch {
+    --open-h: 150px;
+  }
+  .nook {
+    gap: 12px;
+    padding: 14px 14px 12px 12px;
+  }
+  .n-art {
+    width: 84px;
+    height: 84px;
+    border-radius: 15px;
+  }
+  .n-controls {
+    gap: 8px;
+    margin: 4px 0 2px;
+  }
+}
+
+/* ============ shared type ============ */
+.eyebrow {
+  margin: 0 0 18px;
+  font: 500 11px/1.4 var(--font-mono);
+  font-stretch: 100%;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--sun);
+}
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  text-wrap: balance;
+  margin: 0;
+}
+h2 {
+  font-weight: 750;
+  font-stretch: 90%;
+  font-size: clamp(2.3rem, 5.4vw, 4.4rem);
+  line-height: 0.96;
+  letter-spacing: -0.035em;
+}
+h3 {
+  font-weight: 700;
+  font-stretch: 95%;
+  font-size: 1.3rem;
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+}
+.lede {
+  margin: 22px 0 0;
+  max-width: 34em;
+  font-size: clamp(1.05rem, 1.5vw, 1.2rem);
+  line-height: 1.55;
+  color: var(--muted);
+}
+.lede b {
+  color: var(--text);
+  font-weight: 600;
+}
+.section {
+  max-width: var(--maxw);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+  padding-block: clamp(80px, 11vw, 150px) 0;
+}
+.section-head {
+  max-width: 760px;
+}
+
+/* ============ hero ============ */
+.hero {
+  position: relative;
+  isolation: isolate;
+  padding-block: calc(var(--bar-h) + clamp(84px, 12vw, 150px)) clamp(64px, 8vw, 110px);
+}
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+}
+.hero-bg::before {
+  content: "";
+  position: absolute;
+  inset: -4% -4% 0;
+  background: url("assets/wallpaper.webp") 50% 38% / cover no-repeat;
+  transform: scale(1.04);
+  animation: drift 26s ease-in-out infinite alternate;
+}
+.hero-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(52% 46% at 74% 44%, color-mix(in srgb, var(--song) 26%, transparent), transparent 70%),
+    radial-gradient(58% 62% at 18% 58%, rgba(6, 7, 15, 0.62), transparent 72%),
+    linear-gradient(180deg, rgba(6, 7, 15, 0.1) 0%, rgba(6, 7, 15, 0.32) 55%, var(--ink) 99%);
+}
+@media (max-width: 900px) {
+  .hero-bg::after {
+    background:
+      radial-gradient(80% 40% at 50% 70%, color-mix(in srgb, var(--song) 22%, transparent), transparent 70%),
+      linear-gradient(180deg, rgba(6, 7, 15, 0.45) 0%, rgba(6, 7, 15, 0.72) 30%, rgba(6, 7, 15, 0.6) 62%, var(--ink) 99%);
+  }
+}
+@keyframes drift {
+  from { transform: scale(1.04) translate3d(-1%, 0, 0); }
+  to { transform: scale(1.09) translate3d(1.2%, 1%, 0); }
+}
+.hero-inner {
+  max-width: var(--maxw);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+  display: grid;
+  grid-template-columns: minmax(0, 1.12fr) minmax(0, 0.88fr);
+  gap: clamp(36px, 5vw, 80px);
+  align-items: center;
+}
+.hero-copy {
+  min-width: 0;
+}
+h1 {
+  font-weight: 800;
+  font-stretch: 86%;
+  font-size: clamp(3.2rem, 8.4vw, 7.6rem);
+  line-height: 0.88;
+  letter-spacing: -0.034em;
+}
+h1 .line {
+  display: block;
+}
+.grad {
+  background: linear-gradient(100deg, var(--sun) 5%, var(--ember) 45%, var(--rose) 92%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  padding-bottom: 0.06em;
+}
+.cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 22px;
+  margin-top: 36px;
+}
+.meta {
+  margin: 18px 0 0;
+  font: 400 11px/1.6 var(--font-mono);
+  font-stretch: 100%;
+  letter-spacing: 0.04em;
+  color: var(--faint);
+}
+.meta span + span::before {
+  content: "·";
+  margin: 0 0.6em;
+  color: var(--faint);
+}
+.ghost-link {
+  font-weight: 600;
+  font-size: 15px;
+  text-decoration: none;
+  color: var(--text);
+  border-bottom: 1px solid var(--line-2);
+  padding-bottom: 2px;
+  transition: border-color 200ms ease, color 200ms ease;
+}
+.ghost-link:hover {
+  border-color: var(--sun);
+  color: var(--sun);
+}
+.os-note {
+  margin: 14px 0 0;
+  font-size: 14px;
+  color: var(--muted);
+}
+.hero-art {
+  position: relative;
+  min-width: 0;
+  perspective: 1200px;
+}
+.hero-art .halo {
+  position: absolute;
+  inset: 8% 4% 2%;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--song) 55%, transparent), transparent);
+  filter: blur(30px);
+  opacity: 0.7;
+}
+.hero-art .shot {
+  width: 100%;
+  max-width: 470px;
+  margin-inline: auto;
+  transform: rotateY(var(--ry, -8deg)) rotateX(var(--rx, 4deg));
+  transform-style: preserve-3d;
+  transition: transform 700ms var(--out);
+  filter: drop-shadow(0 40px 60px rgba(0, 0, 0, 0.55));
+}
+.hero-art .shot img {
+  width: 100%;
+  height: auto;
+}
+.hint {
+  position: absolute;
+  top: calc(var(--bar-h) + 22px);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font: 500 10.5px/1 var(--font-mono);
+  font-stretch: 100%;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.72);
+  white-space: nowrap;
+  transition: opacity 400ms ease;
+}
+.hint svg {
+  width: 12px;
+  height: 12px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  animation: nudge 1.8s ease-in-out infinite;
+}
+.hint.gone {
+  opacity: 0;
+}
+@keyframes nudge {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+@media (max-width: 900px) {
+  .hero-inner {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .hero-art .shot {
+    max-width: 420px;
+  }
+}
+
+/* ============ the download button ============ */
+.dl-btn {
+  position: relative;
+  text-decoration: none;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 60px;
+  padding: 10px 26px 10px 20px;
+  border-radius: 999px;
+  color: var(--on-sun);
+  background: linear-gradient(100deg, #ffd48c 0%, var(--sun) 18%, var(--ember) 55%, var(--rose) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.18),
+    0 14px 34px -12px rgba(255, 120, 80, 0.7),
+    0 2px 6px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  text-align: left;
+  transition: transform 320ms var(--spring), box-shadow 320ms ease;
+}
+.dl-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, 0.55) 48%, transparent 64%);
+  transform: translateX(-120%);
+  transition: transform 900ms var(--out);
+}
+.dl-btn:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.18),
+    0 22px 44px -14px rgba(255, 120, 80, 0.85),
+    0 2px 6px rgba(0, 0, 0, 0.3);
+}
+.dl-btn:hover::before {
+  transform: translateX(120%);
+}
+.dl-btn:active {
+  transform: translateY(0) scale(0.98);
+}
+.dl-btn:hover .dl-ico svg {
+  animation: bob 1s ease-in-out infinite;
+}
+@keyframes bob {
+  0%, 100% { transform: translateY(-2px); }
+  50% { transform: translateY(2px); }
+}
+.dl-ico {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: rgba(29, 11, 18, 0.12);
+}
+.dl-ico svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.dl-label {
+  display: grid;
+  gap: 2px;
+}
+.dl-label b {
+  font: 700 17px/1.1 var(--font-body);
+  font-stretch: 100%;
+}
+.dl-label small {
+  font: 500 10.5px/1.2 var(--font-mono);
+  font-stretch: 100%;
+  letter-spacing: 0.06em;
+  opacity: 0.72;
+}
+.dl-status {
+  min-height: 1.5em;
+  margin: 12px 0 0;
+  font-size: 14px;
+  color: var(--muted);
+}
+.dl-status.good {
+  color: #9fe3b8;
+}
+.dl-status.bad {
+  color: #ffb3a1;
+}
+
+/* ============ works with ============ */
+.works {
+  max-width: var(--maxw);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+.works-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px 26px;
+  padding-block: 26px;
+  border-block: 1px solid var(--line);
+}
+.works-row .label {
+  font: 500 10.5px/1 var(--font-mono);
+  font-stretch: 100%;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.works-row span:not(.label) {
+  font: 650 15px/1.2 var(--font-display);
+  font-stretch: 94%;
+  color: rgba(246, 243, 251, 0.78);
+}
+
+/* ============ glance / touch / open ============ */
+.depths {
+  display: grid;
+  gap: clamp(56px, 7vw, 96px);
+  margin-top: clamp(48px, 6vw, 80px);
+}
+.depth {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  gap: clamp(24px, 4vw, 64px);
+  align-items: center;
+}
+.depth-copy {
+  min-width: 0;
+  max-width: 30em;
+}
+.depth-copy .step {
+  display: block;
+  margin-bottom: 12px;
+  font: 500 11px/1 var(--font-mono);
+  font-stretch: 100%;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.depth-copy h3 {
+  font-size: clamp(1.9rem, 3.4vw, 2.8rem);
+  font-weight: 750;
+  font-stretch: 88%;
+  letter-spacing: -0.03em;
+}
+.depth-copy p {
+  margin: 12px 0 0;
+  color: var(--muted);
+}
+.frame {
+  position: relative;
+  min-width: 0;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px var(--line),
+    0 30px 70px -30px rgba(0, 0, 0, 0.9);
+  background: var(--night);
+}
+.frame img {
+  width: 100%;
+  height: auto;
+}
+.float {
+  position: relative;
+  min-width: 0;
+  filter: drop-shadow(0 34px 50px rgba(0, 0, 0, 0.55));
+}
+.float img {
+  width: 100%;
+  height: auto;
+  margin-inline: auto;
+}
+.depth .float img {
+  max-width: 440px;
+}
+@media (max-width: 820px) {
+  .depth {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ============ the bar (new in 4.3) ============ */
+.bar-section {
+  position: relative;
+}
+.bar-card {
+  position: relative;
+  isolation: isolate;
+  margin-top: clamp(40px, 5vw, 64px);
+  padding: clamp(24px, 4vw, 48px);
+  border-radius: 28px;
+  background:
+    radial-gradient(70% 90% at 50% 0%, color-mix(in srgb, var(--song) 16%, transparent), transparent 70%),
+    linear-gradient(180deg, #0f1030, #090a1a);
+  box-shadow: 0 0 0 1px var(--line);
+  overflow: hidden;
+}
+.bar-card .frame {
+  max-width: 760px;
+  margin-inline: auto;
+}
+.new-list {
+  list-style: none;
+  margin: clamp(28px, 4vw, 44px) 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 28px clamp(24px, 4vw, 56px);
+}
+.new-list li {
+  min-width: 0;
+  padding-top: 18px;
+  border-top: 1px solid var(--line-2);
+}
+.new-list h3 {
+  font-size: 1.15rem;
+}
+.new-list p {
+  margin: 8px 0 0;
+  font-size: 15.5px;
+  color: var(--muted);
+}
+@media (max-width: 640px) {
+  .new-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ============ styles ============ */
+.styles {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  gap: clamp(28px, 5vw, 72px);
+  align-items: center;
+  margin-top: clamp(40px, 5vw, 64px);
+}
+.style-tabs {
+  display: grid;
+  gap: 4px;
+}
+.style-tab {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 2px 16px;
+  align-items: baseline;
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 14px;
+  text-align: left;
+  color: var(--muted);
+  transition: background 220ms ease, color 220ms ease;
+}
+.style-tab .k {
+  grid-row: span 2;
+  font: 500 10.5px/1.8 var(--font-mono);
+  font-stretch: 100%;
+  letter-spacing: 0.1em;
+  color: var(--faint);
+}
+.style-tab b {
+  font: 700 1.15rem/1.2 var(--font-display);
+  font-stretch: 92%;
+  color: var(--text);
+}
+.style-tab span:last-child {
+  font-size: 14.5px;
+  line-height: 1.45;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 400ms var(--out), opacity 300ms ease;
+}
+.style-tab:hover {
+  background: rgba(255, 255, 255, 0.035);
+}
+.style-tab[aria-selected="true"] {
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.style-tab[aria-selected="true"] .k {
+  color: var(--sun);
+}
+.style-tab[aria-selected="true"] span:last-child {
+  max-height: 4.5em;
+  opacity: 1;
+}
+.style-stage {
+  position: relative;
+  min-width: 0;
+  aspect-ratio: 1 / 0.92;
+  max-width: 100%;
+  border-radius: 28px;
+  background:
+    radial-gradient(70% 60% at 50% 45%, color-mix(in srgb, var(--song) 20%, transparent), transparent 72%),
+    url("assets/wallpaper.webp") 50% 60% / 220% no-repeat;
+  box-shadow: 0 0 0 1px var(--line), 0 40px 80px -40px rgba(0, 0, 0, 0.9);
+  overflow: hidden;
+}
+.style-stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(6, 7, 15, 0.25), rgba(6, 7, 15, 0.1) 50%, rgba(6, 7, 15, 0.35));
+  pointer-events: none;
+}
+.style-stage figure {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  padding: 7%;
+  opacity: 0;
+  transform: translateY(16px) scale(0.965);
+  transition: opacity 450ms ease, transform 700ms var(--spring);
+  filter: drop-shadow(0 30px 40px rgba(0, 0, 0, 0.5));
+}
+.style-stage figure.on {
+  opacity: 1;
+  transform: none;
+}
+.style-stage figure img {
+  max-height: 100%;
+  width: auto;
+  object-fit: contain;
+}
+@media (max-width: 860px) {
+  .styles {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ============ splits: volume, taskbar ============ */
+.split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(32px, 6vw, 96px);
+  align-items: center;
+}
+.split .copy {
+  min-width: 0;
+}
+.facts {
+  list-style: none;
+  margin: 28px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+.facts li {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  color: var(--muted);
+  font-size: 15.5px;
+}
+.facts li::before {
+  content: "";
+  flex: none;
+  width: 18px;
+  height: 1px;
+  transform: translateY(-4px);
+  background: var(--sun);
+}
+.facts b {
+  color: var(--text);
+  font-weight: 600;
+}
+.kbd {
+  font: 500 12px/1 var(--font-mono);
+  font-stretch: 100%;
+  padding: 3px 6px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.07);
+  box-shadow: inset 0 0 0 1px var(--line-2);
+  color: var(--text);
+  white-space: nowrap;
+}
+.mixer-art {
+  position: relative;
+  min-width: 0;
+}
+.mixer-art .float img {
+  max-width: 400px;
+}
+@media (max-width: 820px) {
+  .split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .split .mixer-art {
+    order: 2;
+  }
+}
+
+/* ============ stats ============ */
+.stats-shot {
+  position: relative;
+  margin-top: clamp(40px, 5vw, 64px);
+  perspective: 1600px;
+}
+.stats-shot .frame {
+  border-radius: 14px;
+  transform: rotateX(8deg);
+  transform-origin: 50% 100%;
+  transition: transform 900ms var(--out);
+}
+.stats-shot:hover .frame {
+  transform: none;
+}
+.stats-shot::before {
+  content: "";
+  position: absolute;
+  inset: 10% 8% -4%;
+  z-index: -1;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--song) 30%, transparent), transparent);
+  filter: blur(40px);
+}
+
+/* ============ more ============ */
+.more {
+  list-style: none;
+  margin: clamp(40px, 5vw, 64px) 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--line);
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow: 0 0 0 1px var(--line);
+}
+.more li {
+  min-width: 0;
+  padding: 26px 24px 28px;
+  background: var(--ink);
+}
+.more h3 {
+  font-size: 1.1rem;
+}
+.more p {
+  margin: 8px 0 0;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+@media (max-width: 860px) {
+  .more {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 560px) {
+  .more {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ============ download ============ */
+.download {
+  padding-bottom: clamp(80px, 10vw, 140px);
+}
+.dl-card {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  gap: clamp(32px, 5vw, 72px);
+  padding: clamp(28px, 5vw, 64px);
+  border-radius: 32px;
+  overflow: hidden;
+  background: linear-gradient(160deg, #141236, #0a0a1c 60%);
+  box-shadow: 0 0 0 1px var(--line), 0 50px 100px -50px rgba(0, 0, 0, 0.9);
+}
+.dl-card::before {
+  content: "";
+  position: absolute;
+  inset: -30% -20% auto auto;
+  width: 70%;
+  aspect-ratio: 1;
+  z-index: -1;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--song) 34%, transparent), transparent);
+  filter: blur(20px);
+}
+.dl-card .app {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 26px;
+}
+.dl-card .app img {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  box-shadow: 0 12px 30px -10px rgba(110, 70, 230, 0.7);
+}
+.dl-card .app div {
+  display: grid;
+  gap: 2px;
+}
+.dl-card .app b {
+  font: 750 1.4rem/1.1 var(--font-display);
+  font-stretch: 92%;
+}
+.dl-card .app span {
+  font: 400 11px/1.4 var(--font-mono);
+  font-stretch: 100%;
+  letter-spacing: 0.04em;
+  color: var(--faint);
+}
+.dl-card h2 {
+  font-size: clamp(2.2rem, 4.6vw, 3.6rem);
+}
+.dl-card .lede {
+  margin-top: 16px;
+}
+.dl-card .cta-row {
+  margin-top: 30px;
+}
+.install {
+  list-style: none;
+  counter-reset: step;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 22px;
+  align-content: center;
+  min-width: 0;
+}
+.install li {
+  counter-increment: step;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 14px;
+}
+.install li::before {
+  content: counter(step);
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font: 600 13px/1 var(--font-mono);
+  font-stretch: 100%;
+  color: var(--sun);
+  box-shadow: inset 0 0 0 1px rgba(255, 195, 92, 0.4);
+}
+.install b {
+  display: block;
+  font: 700 1.05rem/1.3 var(--font-display);
+  font-stretch: 94%;
+}
+.install p {
+  margin: 4px 0 0;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.install strong {
+  font-weight: 600;
+  color: var(--text);
+}
+.install code,
+.hash code {
+  font: 500 12.5px/1.4 var(--font-mono);
+  font-stretch: 100%;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+.hash {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin: 26px 0 0;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+  font: 500 10.5px/1.4 var(--font-mono);
+  font-stretch: 100%;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.hash code {
+  flex: 1 1 260px;
+  min-width: 0;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+.copy-btn {
+  padding: 6px 12px;
+  border-radius: 999px;
+  font: 600 12px/1 var(--font-body);
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--text);
+  box-shadow: inset 0 0 0 1px var(--line-2);
+  transition: background 200ms ease;
+}
+.copy-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+@media (max-width: 860px) {
+  .dl-card {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+footer {
+  max-width: var(--maxw);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+  padding-block: 28px 44px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 10px 24px;
+  border-top: 1px solid var(--line);
+  font: 400 11px/1.6 var(--font-mono);
+  font-stretch: 100%;
+  letter-spacing: 0.03em;
+  color: var(--faint);
+}
+
+/* ============ motion ============ */
+.rise {
+  animation: rise-in 900ms var(--out) both;
+}
+@keyframes rise-in {
+  from { transform: translateY(26px); opacity: 0.4; filter: blur(6px); }
+  to { transform: none; opacity: 1; filter: none; }
+}
+.d1 { animation-delay: 60ms; }
+.d2 { animation-delay: 140ms; }
+.d3 { animation-delay: 220ms; }
+.d4 { animation-delay: 300ms; }
+.d5 { animation-delay: 380ms; }
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal {
+      animation: reveal linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 30%;
+    }
+    @keyframes reveal {
+      from { transform: translateY(48px) scale(0.97); }
+      to { transform: none; }
+    }
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
+  .hero-bg::before {
+    animation: none;
+  }
+}
+</style>
+</head>
+<body>
+<header class="topbar" id="topbar">
+  <div class="tb-glow" id="tbGlow"></div>
+  <div class="tb-sweep"></div>
+  <div class="tb-side">
+    <a class="brand" href="#top"><img src="assets/icon.webp" alt="" width="18" height="18"><span>Cadence</span></a>
+    <span class="tb-date" id="tbDate">Wednesday, September 30</span>
+  </div>
+  <div class="tb-side">
+    <span class="tb-time" id="tbTime">12:00 PM</span>
+    <a class="tb-dl" href="#download" tabindex="-1" id="tbDl">Download</a>
+  </div>
+</header>
+
+<div class="notch playing" id="notch">
+  <div class="clip">
+    <div class="compact">
+      <img class="c-art" id="cArt" src="assets/cover1.webp" alt="">
+      <span class="bars c-bars" id="cBars"><i></i><i></i><i></i><i></i></span>
+    </div>
+    <div class="ann" aria-hidden="true">
+      <img class="a-art" id="aArt" src="assets/cover1.webp" alt="">
+      <div class="a-text" id="aText"></div>
+      <span class="bars a-bars" id="aBars"><i></i><i></i><i></i></span>
+    </div>
+    <button class="n-handle" id="nHandle" aria-expanded="false" aria-controls="nook"><span class="vh" id="nHandleLabel">Now playing Neon Harbor. Show the controls.</span></button>
+    <div class="nook" id="nook" inert>
+      <div class="n-art"><img id="nArt" src="assets/cover1.webp" alt=""></div>
+      <div class="n-body">
+        <div class="n-top">
+          <div class="n-text">
+            <div class="n-title" id="nTitle">Neon Harbor</div>
+            <div class="n-artist" id="nArtist">The Midnight Ferries</div>
+          </div>
+          <span class="bars n-bars" id="nBars"><i></i><i></i><i></i><i></i><i></i></span>
+        </div>
+        <div class="n-controls">
+          <button class="n-btn" data-a="prev" aria-label="Previous song"><svg viewBox="0 0 24 24"><path d="M6 5h2v14H6zM20 5.5v13a.8.8 0 0 1-1.2.7L9.3 12.7a.8.8 0 0 1 0-1.4l9.5-6.5a.8.8 0 0 1 1.2.7z"/></svg></button>
+          <button class="n-btn n-play" data-a="play" aria-label="Pause"><svg class="i-pause" viewBox="0 0 24 24"><path d="M7 5h3.2v14H7zM13.8 5H17v14h-3.2z"/></svg><svg class="i-play" viewBox="0 0 24 24"><path d="M8 5.2v13.6a.9.9 0 0 0 1.4.8l10.2-6.8a.9.9 0 0 0 0-1.6L9.4 4.4A.9.9 0 0 0 8 5.2z"/></svg></button>
+          <button class="n-btn" data-a="next" aria-label="Next song"><svg viewBox="0 0 24 24"><path d="M16 5h2v14h-2zM4 5.5v13a.8.8 0 0 0 1.2.7l9.5-6.5a.8.8 0 0 0 0-1.4L5.2 4.8A.8.8 0 0 0 4 5.5z"/></svg></button>
+        </div>
+        <div class="n-progress">
+          <div class="n-bar"><div class="n-fill" id="nFill"></div></div>
+          <div class="n-times"><span id="nPos">0:42</span><span id="nApp">Spotify</span><span id="nLeft">-3:21</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<span class="measure" id="measure" aria-hidden="true"></span>
+
+<main id="top">
+  <section class="hero">
+    <div class="hero-bg" aria-hidden="true"></div>
+    <p class="hint" id="hint"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 10.5V1.8M2.4 5.2 6 1.6l3.6 3.6"/></svg><span id="hintText">Rest your pointer on the notch</span></p>
+    <div class="hero-inner">
+      <div class="hero-copy">
+        <p class="eyebrow rise">Cadence 4.3 · for Windows 10 and 11</p>
+        <h1 class="rise d1"><span class="line">The notch</span><span class="line">Windows</span><span class="line grad">never had.</span></h1>
+        <p class="lede rise d2">Cadence puts the song that's playing in a notch at the top of your screen. <b>Rest your pointer on it</b> for the controls, or click the cover for the full player with lyrics that keep time.</p>
+        <div class="cta-row rise d3">
+          <a class="dl-btn" id="dlHero" href="https://github.com/ttvpixalon/cadence/releases/download/v4.3.0/Cadence-Setup-4.3.0.exe">
+            <span class="dl-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0 4.5-4.5M12 15l-4.5-4.5M5 19.5h14"/></svg></span>
+            <span class="dl-label"><b>Download for Windows</b><small>Free · 98 MB · v4.3.0</small></span>
+          </a>
+          <a class="ghost-link" href="#new">What's new in 4.3</a>
+        </div>
+        <p class="dl-status" id="dlHeroStatus" aria-live="polite"></p>
+        <p class="meta rise d4"><span>No account</span><span>No ads</span><span>Installs in seconds</span></p>
+      </div>
+      <div class="hero-art rise d3" id="heroArt">
+        <div class="halo" aria-hidden="true"></div>
+        <div class="shot" id="heroShot"><img src="assets/flyout-lyrics.webp" width="846" height="743" alt="Cadence's glass media flyout playing Neon Harbor by The Midnight Ferries, with synced lyrics and play controls"></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="works">
+    <p class="works-row"><span class="label">Works with</span><span>Spotify</span><span>Apple Music</span><span>YouTube Music</span><span>Amazon Music</span><span>TIDAL</span><span>Deezer</span><span>VLC</span><span>foobar2000</span><span>MusicBee</span><span>every browser</span></p>
+  </div>
+
+  <section class="section" id="island">
+    <div class="section-head reveal">
+      <p class="eyebrow">The Island</p>
+      <h2>Glance. Touch. Open.</h2>
+      <p class="lede">Three depths, all at the top of your screen. You go only as deep as you want to.</p>
+    </div>
+    <div class="depths">
+      <div class="depth">
+        <div class="depth-copy">
+          <span class="step">1 · Glance</span>
+          <h3>What's playing, at the edge.</h3>
+          <p>The notch shows the cover and a meter that moves with the sound. When a new song starts, it widens for a moment with the name.</p>
+        </div>
+        <figure class="frame reveal" style="margin:0"><img src="assets/scene-glance.webp" width="1200" height="160" loading="lazy" alt="The notch in Cadence's bar, showing a small album cover and a level meter"></figure>
+      </div>
+      <div class="depth">
+        <div class="depth-copy">
+          <span class="step">2 · Touch</span>
+          <h3>Rest on it for controls.</h3>
+          <p>The notch unfolds into the nook: the cover, previous, play and next, and how far into the song you are. Move away and it folds back.</p>
+        </div>
+        <figure class="frame reveal" style="margin:0"><img src="assets/scene-touch.webp" width="1320" height="460" loading="lazy" alt="The nook unfolded from the notch, with the cover, song title, playback controls and a progress bar"></figure>
+      </div>
+      <div class="depth">
+        <div class="depth-copy">
+          <span class="step">3 · Open</span>
+          <h3>Click the cover for everything.</h3>
+          <p>The full player in liquid glass: seek bar, shuffle and repeat, synced lyrics, and a chip that opens the song in its app.</p>
+        </div>
+        <figure class="float reveal" style="margin:0"><img src="assets/flyout-glass.webp" width="846" height="531" loading="lazy" alt="Cadence's media flyout in the Glass style, with shuffle, previous, pause, next and repeat buttons"></figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="section bar-section" id="new">
+    <div class="section-head reveal">
+      <p class="eyebrow">New in 4.3</p>
+      <h2>Look up. That's the bar.</h2>
+      <p class="lede">The top of this page is a working copy of it. Since 4.2, Cadence keeps a thin strip clear for the notch so windows never slide under it. In 4.3 that strip becomes the bar, frosted glass over your wallpaper with the notch cut into it.</p>
+    </div>
+    <div class="bar-card reveal">
+      <figure class="frame" style="margin:0 auto"><img src="assets/scene-announce.webp" width="1520" height="160" loading="lazy" alt="Cadence's bar with the notch widened to announce a new song, Paper Satellites by Juniper Vale"></figure>
+      <ul class="new-list">
+        <li><h3>Frosted glass, edge to edge</h3><p>Your wallpaper shows through the bar, blurred and tinted so it stays calm in light and dark mode.</p></li>
+        <li><h3>Date and time</h3><p>At the two ends of the bar, written the way your taskbar clock writes them, in 12 or 24 hours.</p></li>
+        <li><h3>Glows with the music</h3><p>The album's colour spills out of the notch and swells with the sound. A new song sends a light running to both ends.</p></li>
+        <li><h3>Steps aside for full screen</h3><p>Games and videos get the whole screen. The bar hides the moment a full-screen app opens.</p></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="section" id="flyouts">
+    <div class="section-head reveal">
+      <p class="eyebrow">Media flyout</p>
+      <h2>Five ways to see the song.</h2>
+      <p class="lede">Every style has the same controls, seek bar and synced lyrics. Tap a line of the lyrics to jump there.</p>
+    </div>
+    <div class="styles">
+      <div class="style-tabs" role="tablist" aria-label="Flyout styles" id="styleTabs">
+        <button class="style-tab" role="tab" id="tab-glass" aria-controls="stage" aria-selected="true" data-i="0"><span class="k">01</span><b>Glass</b><span>Your wallpaper through frosted glass, tinted by the cover.</span></button>
+        <button class="style-tab" role="tab" id="tab-midnight" aria-controls="stage" aria-selected="false" tabindex="-1" data-i="1"><span class="k">02</span><b>Midnight</b><span>A dark card lit from inside by the cover's colours.</span></button>
+        <button class="style-tab" role="tab" id="tab-vinyl" aria-controls="stage" aria-selected="false" tabindex="-1" data-i="2"><span class="k">03</span><b>Vinyl</b><span>A record slides out from behind the cover and turns while the song plays.</span></button>
+        <button class="style-tab" role="tab" id="tab-poster" aria-controls="stage" aria-selected="false" tabindex="-1" data-i="3"><span class="k">04</span><b>Poster</b><span>The cover fills the whole card, with the words on top of it.</span></button>
+        <button class="style-tab" role="tab" id="tab-minimal" aria-controls="stage" aria-selected="false" tabindex="-1" data-i="4"><span class="k">05</span><b>Minimal</b><span>One slim row with the progress line under it.</span></button>
+      </div>
+      <div class="style-stage reveal" id="stage" role="tabpanel" aria-live="polite">
+        <figure class="on"><img src="assets/flyout-glass.webp" width="846" height="531" loading="lazy" alt="The Glass style"></figure>
+        <figure><img src="assets/flyout-midnight.webp" width="914" height="621" loading="lazy" alt="The Midnight style"></figure>
+        <figure><img src="assets/flyout-vinyl.webp" width="938" height="632" loading="lazy" alt="The Vinyl style, with a record behind the cover"></figure>
+        <figure><img src="assets/flyout-poster.webp" width="902" height="924" loading="lazy" alt="The Poster style, with the cover filling the card"></figure>
+        <figure><img src="assets/flyout-minimal.webp" width="854" height="247" loading="lazy" alt="The Minimal style, a single slim row"></figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="volume">
+    <div class="split">
+      <div class="mixer-art">
+        <figure class="float reveal" style="margin:0"><img src="assets/mixer.webp" width="766" height="670" loading="lazy" alt="Cadence's volume flyout with the mixer open: master volume, the output device and three apps with their own sliders"></figure>
+      </div>
+      <div class="copy reveal">
+        <p class="eyebrow">Volume</p>
+        <h2>A volume flyout with a mixer.</h2>
+        <p class="lede">Cadence replaces the Windows volume indicator. Open the mixer for every app's own volume, with meters that move with the sound.</p>
+        <ul class="facts">
+          <li><span><b>Per-app volume</b> for the browser, the game and the call, each on its own slider.</span></li>
+          <li><span><b>Switch outputs</b> between speakers and headphones from the same list, or press <span class="kbd">Ctrl+Alt+O</span>.</span></li>
+          <li><span><b>Scroll to change it</b> over the flyout or the taskbar widget.</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="taskbar">
+    <div class="split">
+      <div class="copy reveal">
+        <p class="eyebrow">Taskbar</p>
+        <h2>A player on your taskbar.</h2>
+        <p class="lede">The cover, the song and its controls sit right on the taskbar, flat like everything else there. It works on a taskbar at any edge and hides while nothing plays.</p>
+      </div>
+      <figure class="frame reveal" style="margin:0"><img src="assets/scene-widget.webp" width="880" height="160" loading="lazy" alt="Cadence's taskbar widget showing the album cover, the song and artist, and previous, pause and next buttons"></figure>
+    </div>
+  </section>
+
+  <section class="section" id="stats">
+    <div class="section-head reveal">
+      <p class="eyebrow">Stats</p>
+      <h2>Your listening, counted.</h2>
+      <p class="lede">Minutes listened, top songs and artists with their covers and photos, streaks, and the hours you listen most. Click a song to play it again in the app you heard it in. Your history stays on your PC.</p>
+    </div>
+    <div class="stats-shot">
+      <figure class="frame reveal" style="margin:0"><img src="assets/settings-stats.webp" width="2120" height="1600" loading="lazy" alt="The stats page in Cadence's settings: minutes listened, songs, artists, a chart of the week, top songs with covers and top artists with photos"></figure>
+    </div>
+  </section>
+
+  <section class="section" id="more">
+    <div class="section-head reveal">
+      <p class="eyebrow">And the rest</p>
+      <h2>Small things, done properly.</h2>
+    </div>
+    <ul class="more">
+      <li><h3>Synced lyrics</h3><p>Lines that follow the song, from the free LRCLIB database. Tap a line to jump to it.</p></li>
+      <li><h3>Sleep timer and alarm</h3><p>Fade out and pause after a while or at the end of the song. Wake up to your music, turned up slowly.</p></li>
+      <li><h3>Headphones</h3><p>A pop-up when headphones connect, with the battery of Bluetooth devices that report it.</p></li>
+      <li><h3>Lock keys</h3><p>Caps Lock and Num Lock tell you when they change, in the same glass.</p></li>
+      <li><h3>Quiet hours</h3><p>Song pop-ups stay away at night, while everything you ask for still works.</p></li>
+      <li><h3>Play it again</h3><p>Songs from your history open in the app you heard them in, as the exact track when it can be found.</p></li>
+    </ul>
+  </section>
+
+  <section class="section download" id="download">
+    <div class="dl-card">
+      <div>
+        <div class="app"><img src="assets/icon.webp" width="64" height="64" alt=""><div><b>Cadence</b><span>Version 4.3.0 · September 2026</span></div></div>
+        <h2>Get Cadence 4.3</h2>
+        <p class="lede">Free, with no account. For Windows 10 (version 1809 or newer) and Windows 11, 64-bit.</p>
+        <div class="cta-row">
+          <a class="dl-btn" id="dlMain" href="https://github.com/ttvpixalon/cadence/releases/download/v4.3.0/Cadence-Setup-4.3.0.exe">
+            <span class="dl-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0 4.5-4.5M12 15l-4.5-4.5M5 19.5h14"/></svg></span>
+            <span class="dl-label"><b>Download for Windows</b><small>Cadence-Setup-4.3.0.exe · 98 MB</small></span>
+          </a>
+          <a class="ghost-link" href="https://github.com/ttvpixalon/cadence/releases" target="_blank" rel="noopener">All versions on GitHub</a>
+        </div>
+        <p class="dl-status" id="dlMainStatus" aria-live="polite"></p>
+        <p class="hash">SHA-256 <code id="sha">765e846125254576a51ae143d289be6dc657c0423548b8b873d4242eda61ae44</code><button class="copy-btn" id="copySha" type="button">Copy</button></p>
+      </div>
+      <ol class="install">
+        <li><div><b>Run the installer</b><p>Open <code>Cadence-Setup-4.3.0.exe</code> from your downloads. If your browser says the file isn't commonly downloaded, choose <strong>Keep</strong>.</p></div></li>
+        <li><div><b>If Windows warns you</b><p>“Windows protected your PC” appears because the installer isn't code-signed yet. Click <strong>More info</strong>, then <strong>Run anyway</strong>.</p></div></li>
+        <li><div><b>Look up</b><p>Cadence installs for your account only, with no admin prompt, and starts right away. The notch is at the top of your screen, and the music note by the clock opens Settings.</p></div></li>
+      </ol>
+    </div>
+  </section>
+
+  <footer>
+    <span>Cadence 4.3.0 · Free for Windows 10 and 11</span>
+    <span>The songs and covers on this page are made-up samples.</span>
+  </footer>
+</main>
+
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var root = document.documentElement;
+
+  /* ---------------- the bar's clock ---------------- */
+  function tickClock() {
+    var now = new Date();
+    try {
+      $('tbDate').textContent = now.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
+      $('tbTime').textContent = now.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+    } catch (e) {}
+    setTimeout(tickClock, Math.min(20000, 60000 - (now.getSeconds() * 1000 + now.getMilliseconds()) + 150));
+  }
+  tickClock();
+
+  /* ---------------- the notch demo ---------------- */
+  var SONGS = [
+    { title: 'Neon Harbor', artist: 'The Midnight Ferries', app: 'Spotify', cover: 'assets/cover1.webp', color: '#ffbe55', dur: 243 },
+    { title: 'Paper Satellites', artist: 'Juniper Vale', app: 'Spotify', cover: 'assets/cover2.webp', color: '#6f8dff', dur: 212 },
+    { title: 'Late Train to Somewhere Quiet', artist: 'Orla & The Northern Line', app: 'Microsoft Edge', cover: 'assets/cover3.webp', color: '#ff9a4d', dur: 318 },
+    { title: 'Coastline', artist: 'Marisol Ortega', app: 'Apple Music', cover: 'assets/cover4.webp', color: '#35b9d0', dur: 197 }
+  ];
+  SONGS.forEach(function (s) { var im = new Image(); im.src = s.cover; });
+  var notch = $('notch');
+  var topbar = $('topbar');
+  var nook = $('nook');
+  var handle = $('nHandle');
+  var idx = 0;
+  var playing = true;
+  var pos = 42; // seconds into the song
+  var posAt = performance.now();
+  var open = false;
+  var announcing = false;
+  var annTimer = 0;
+  var nextAt = performance.now() + 15000;
+
+  function fmt(s) {
+    s = Math.max(0, Math.round(s));
+    return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+  }
+  function curPos() {
+    var s = SONGS[idx];
+    var p = pos + (playing ? (performance.now() - posAt) / 1000 : 0);
+    return Math.min(s.dur, p);
+  }
+  function paintSong() {
+    var s = SONGS[idx];
+    ['cArt', 'aArt', 'nArt'].forEach(function (id) { $(id).src = s.cover; });
+    $('nTitle').textContent = s.title;
+    $('nArtist').textContent = s.artist;
+    $('nApp').textContent = s.app;
+    $('nHandleLabel').textContent = 'Now playing ' + s.title + ' by ' + s.artist + '. Show the controls.';
+    root.style.setProperty('--song', s.color);
+  }
+  function paintState() {
+    notch.classList.toggle('playing', playing);
+    notch.classList.toggle('open', open);
+    notch.classList.toggle('announce', announcing);
+    handle.setAttribute('aria-expanded', String(open));
+    if (open) nook.removeAttribute('inert');
+    else nook.setAttribute('inert', '');
+    $('nook').querySelector('.n-play').setAttribute('aria-label', playing ? 'Pause' : 'Play');
+  }
+  function sweep() {
+    if (reduce) return;
+    topbar.classList.remove('sweep');
+    void topbar.offsetWidth;
+    topbar.classList.add('sweep');
+    clearTimeout(sweep.t);
+    sweep.t = setTimeout(function () { topbar.classList.remove('sweep'); }, 1800);
+  }
+  function announce() {
+    var s = SONGS[idx];
+    var t = $('aText');
+    t.textContent = '';
+    var b = document.createElement('b');
+    b.textContent = s.title;
+    var sp = document.createElement('span');
+    sp.textContent = '  ·  ' + s.artist;
+    t.append(b, sp);
+    var m = $('measure');
+    m.textContent = '';
+    m.append(b.cloneNode(true), sp.cloneNode(true));
+    var w = m.getBoundingClientRect().width + 22 + 9 + 11 + 7 + 9 + 14 + 4;
+    var maxW = Math.min(380, window.innerWidth - 40);
+    notch.style.setProperty('--ann-w', Math.round(Math.max(Math.min(250, maxW), Math.min(maxW, w))) + 'px');
+    announcing = true;
+    paintState();
+    sweep();
+    clearTimeout(annTimer);
+    annTimer = setTimeout(function () { announcing = false; paintState(); }, 2800);
+  }
+  function go(step) {
+    idx = (idx + step + SONGS.length) % SONGS.length;
+    pos = 0;
+    posAt = performance.now();
+    playing = true;
+    paintSong();
+    if (!open) announce();
+    else paintState();
+    nextAt = performance.now() + 15000;
+  }
+  function setOpen(v) {
+    if (v === open) return;
+    open = v;
+    if (open) {
+      announcing = false;
+      clearTimeout(annTimer);
+      hideHint();
+    }
+    paintState();
+  }
+
+  // hover: rest on the notch to open, leave to fold (like the app)
+  var hoverT = 0;
+  var leaveT = 0;
+  var finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  notch.addEventListener('pointerenter', function (e) {
+    if (e.pointerType !== 'mouse') return;
+    clearTimeout(leaveT);
+    notch.classList.add('hot');
+    hoverT = setTimeout(function () { setOpen(true); }, 150);
+  });
+  notch.addEventListener('pointerleave', function (e) {
+    if (e.pointerType !== 'mouse') return;
+    clearTimeout(hoverT);
+    notch.classList.remove('hot');
+    leaveT = setTimeout(function () { setOpen(false); }, 260);
+  });
+  handle.addEventListener('click', function () {
+    setOpen(!open);
+    if (open) nook.querySelector('.n-play').focus();
+  });
+  nook.addEventListener('focusout', function (e) {
+    if (open && !notch.contains(e.relatedTarget) && !notch.matches(':hover')) setOpen(false);
+  });
+  document.addEventListener('pointerdown', function (e) {
+    if (open && !notch.contains(e.target)) setOpen(false);
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && open) {
+      setOpen(false);
+      handle.focus();
+    }
+  });
+  nook.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-a]');
+    if (!b) return;
+    var a = b.getAttribute('data-a');
+    if (a === 'play') {
+      pos = curPos();
+      posAt = performance.now();
+      playing = !playing;
+      nextAt = performance.now() + 15000;
+      paintState();
+    } else if (a === 'next') go(1);
+    else if (a === 'prev') {
+      if (curPos() > 3) {
+        pos = 0;
+        posAt = performance.now();
+      } else go(-1);
+    }
+  });
+
+  // a made-up beat drives the meters and the bar's glow (the app reads the real output level)
+  var bars = [].slice.call(document.querySelectorAll('.notch .bars i'));
+  var phase = bars.map(function (_, i) { return (i * 2.399) % 6.283; });
+  var speed = bars.map(function (_, i) { return 1.9 + ((i * 7) % 5) * 0.37; });
+  var heights = bars.map(function () { return 0.25; });
+  var glow = $('tbGlow');
+  var env = 0;
+  var lvl = 0;
+  function beat(t) {
+    var b = 60 / 112;
+    var ph = (t % b) / b;
+    var kick = Math.exp(-ph * 6.5);
+    var half = ((t + b / 2) % b) / b;
+    var snare = Math.floor(t / b) % 2 ? Math.exp(-half * 8) * 0.55 : 0;
+    var hat = 0.5 + 0.5 * Math.sin(t * 29.3) * Math.sin(t * 7.1);
+    return Math.min(1, 0.18 + 0.55 * kick + 0.3 * snare + 0.14 * hat);
+  }
+  function frame(now) {
+    var t = now / 1000;
+    var target = playing ? beat(t) : 0;
+    lvl += (target - lvl) * (target > lvl ? 0.35 : 0.08);
+    env += ((playing ? 1 : 0) - env) * 0.05;
+    for (var i = 0; i < bars.length; i++) {
+      var wob = 0.5 + 0.5 * Math.sin(t * speed[i] + phase[i]);
+      var goal = playing ? 0.22 + 0.78 * Math.min(1, lvl * (0.55 + 0.6 * wob)) : 0.25;
+      heights[i] += (goal - heights[i]) * (goal > heights[i] ? 0.42 : 0.14);
+      bars[i].style.transform = 'scaleY(' + heights[i].toFixed(3) + ')';
+    }
+    glow.style.opacity = (0.7 * env * (0.42 + 0.58 * lvl)).toFixed(3);
+    glow.style.transform = 'scaleX(' + (0.78 + 0.52 * lvl).toFixed(3) + ')';
+    var s = SONGS[idx];
+    var p = curPos();
+    if (open) {
+      $('nFill').style.width = ((p / s.dur) * 100).toFixed(2) + '%';
+      $('nPos').textContent = fmt(p);
+      $('nLeft').textContent = '-' + fmt(s.dur - p);
+    }
+    if (playing && p >= s.dur - 0.05) go(1);
+    else if (playing && !open && now > nextAt && !document.hidden) go(1);
+    requestAnimationFrame(frame);
+  }
+  if (!reduce) requestAnimationFrame(frame);
+  else {
+    glow.style.opacity = '0.45';
+    setInterval(function () {
+      var s = SONGS[idx];
+      var p = curPos();
+      $('nFill').style.width = ((p / s.dur) * 100).toFixed(2) + '%';
+      $('nPos').textContent = fmt(p);
+      $('nLeft').textContent = '-' + fmt(s.dur - p);
+    }, 1000);
+  }
+  paintSong();
+  paintState();
+  setTimeout(function () {
+    notch.classList.add('in');
+    setTimeout(announce, 700);
+  }, 350);
+
+  // the hint under the notch
+  var hint = $('hint');
+  if (!finePointer) $('hintText').textContent = 'Tap the notch';
+  function hideHint() { hint.classList.add('gone'); }
+  window.addEventListener('scroll', function () { if (window.scrollY > 120) hideHint(); }, { passive: true });
+
+  // the download pill appears in the bar once the hero's button has scrolled away
+  var heroBtn = $('dlHero');
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        topbar.classList.toggle('scrolled', !en.isIntersecting);
+        $('tbDl').tabIndex = en.isIntersecting ? -1 : 0;
+      });
+    }, { rootMargin: '-40px 0px 0px 0px' }).observe(heroBtn);
+  }
+
+  /* ---------------- the hero shot follows the pointer ---------------- */
+  var shot = $('heroShot');
+  var hero = document.querySelector('.hero');
+  if (!reduce && finePointer) {
+    var raf = 0;
+    hero.addEventListener('pointermove', function (e) {
+      if (raf) return;
+      raf = requestAnimationFrame(function () {
+        raf = 0;
+        var r = hero.getBoundingClientRect();
+        var x = (e.clientX - r.left) / r.width - 0.5;
+        var y = (e.clientY - r.top) / r.height - 0.5;
+        shot.style.setProperty('--ry', (-8 + x * 12).toFixed(2) + 'deg');
+        shot.style.setProperty('--rx', (4 - y * 8).toFixed(2) + 'deg');
+      });
+    });
+    hero.addEventListener('pointerleave', function () {
+      shot.style.removeProperty('--ry');
+      shot.style.removeProperty('--rx');
+    });
+  }
+
+  /* ---------------- flyout styles ---------------- */
+  var tabs = [].slice.call(document.querySelectorAll('.style-tab'));
+  var figs = [].slice.call(document.querySelectorAll('#stage figure'));
+  var styleIdx = 0;
+  var userPicked = false;
+  function pick(i, focus) {
+    styleIdx = (i + tabs.length) % tabs.length;
+    tabs.forEach(function (t, k) {
+      var on = k === styleIdx;
+      t.setAttribute('aria-selected', String(on));
+      t.tabIndex = on ? 0 : -1;
+      figs[k].classList.toggle('on', on);
+    });
+    $('stage').setAttribute('aria-labelledby', tabs[styleIdx].id);
+    if (focus) tabs[styleIdx].focus();
+  }
+  tabs.forEach(function (t, k) {
+    t.addEventListener('click', function () { userPicked = true; pick(k); });
+    t.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowDown' || e.key === 'ArrowRight') { e.preventDefault(); userPicked = true; pick(styleIdx + 1, true); }
+      if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') { e.preventDefault(); userPicked = true; pick(styleIdx - 1, true); }
+    });
+  });
+  var stageSeen = false;
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(function (entries) { stageSeen = entries[0].isIntersecting; }, { threshold: 0.5 }).observe($('stage'));
+  }
+  if (!reduce) setInterval(function () { if (stageSeen && !userPicked && !document.hidden) pick(styleIdx + 1); }, 4200);
+
+  /* ---------------- the download ---------------- */
+  // The installer lives in the GitHub release; the link opens it in a new tab, which saves it.
+  [['dlHero', 'dlHeroStatus'], ['dlMain', 'dlMainStatus']].forEach(function (pair) {
+    $(pair[0]).addEventListener('click', function () {
+      ['dlHeroStatus', 'dlMainStatus'].forEach(function (id) { $(id).textContent = ''; });
+      var el = $(pair[1]);
+      el.className = 'dl-status good';
+      el.textContent = 'Your download is starting. When it finishes, open Cadence-Setup-4.3.0.exe.';
+    });
+  });
+
+  // not on Windows: say so, quietly
+  var ua = navigator.userAgent || '';
+  if (!/Windows/i.test(ua)) {
+    var note = document.createElement('p');
+    note.className = 'os-note';
+    note.textContent = 'Cadence runs on Windows PCs. Open this page on your PC to install it.';
+    $('dlHeroStatus').after(note);
+  }
+
+  // copy the checksum
+  $('copySha').addEventListener('click', function () {
+    var btn = this;
+    var text = $('sha').textContent;
+    var done = function () { btn.textContent = 'Copied'; setTimeout(function () { btn.textContent = 'Copy'; }, 1600); };
+    var select = function () {
+      var r = document.createRange();
+      r.selectNodeContents($('sha'));
+      var s = window.getSelection();
+      s.removeAllRanges();
+      s.addRange(r);
+      btn.textContent = 'Selected';
+      setTimeout(function () { btn.textContent = 'Copy'; }, 1600);
+    };
+    try {
+      navigator.clipboard.writeText(text).then(done, select);
+    } catch (e) {
+      select();
+    }
+  });
+})();
+</script>
+</body>
+</html>

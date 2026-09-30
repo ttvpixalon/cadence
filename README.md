@@ -4,6 +4,8 @@ A notch for your music. Cadence puts the song that's playing in a notch at the t
 
 It also brings a volume flyout with a per-app mixer, a player on the taskbar, listening stats, a sleep timer and lock-key pop-ups.
 
+**Website:** [ttvpixalon.github.io/cadence](https://ttvpixalon.github.io/cadence/)
+
 **[Download Cadence 4.3 for Windows](https://github.com/ttvpixalon/cadence/releases/latest)** · free, no account · Windows 10 (version 1809 or newer) and Windows 11, 64-bit
 
 ## Install
